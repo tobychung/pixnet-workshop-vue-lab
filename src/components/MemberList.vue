@@ -1,7 +1,45 @@
 <template>
   <div class="card-list">
-    <!-- <h1 class="greeting rubberBand">歡迎來到 workshop 我們來看看這邊有哪些人參加！！</h1> -->
-    <h1 class="greeting rubberBand">恭喜你～環境建置成功！</h1>
+    <div class="greeting-container">
+      <h1 class="greeting rubberBand">歡迎來到 workshop 我們來看看這邊有哪些人參加！！</h1>
+    </div>
+    <ul>
+      <!-- Loading -->
+      <div v-if="!loaded.membersData">
+        <h5>Loading ...</h5>
+      </div>
+      <!-- NoData -->
+      <div v-else-if="membersData.data.length === 0">
+        <h5>Oops...好像沒有資料喔</h5>
+      </div>
+      <!--  -->
+      <li class="group-li" v-for="(members, index) in getGroupedData(membersData.data)" :key="index">
+        <h4 class="group-name">組名：{{ members[0].group || '還沒有組名QQ' }}</h4>
+        <ul class="row">
+          <li class="card-li col-lg-4 col-md-6 col-sm-6 fade-in" v-if="member.created_at !== null" v-for="(member) in members" :key="member.key">
+            <router-link :to="`/member/${member.id}`" class="wrap">
+              <div class="block-text">
+                <div class="avatar-container">
+                  <img class="avatar" :src="member.avatar_url || initialAvatar" />
+                </div>
+                <h1>{{ member.name || '無名氏' }}</h1>
+                <hr/>
+                <div class="block-text__info">
+                  <p class="badge">{{ member.group }}</p>
+                  <p>職稱： {{ member.title || '未填寫'}}</p>
+                  <p>興趣： {{ member.hobby || '未填寫' }}</p>
+                  <p>座右銘： {{ member.motto || '未填寫' }}</p>
+                </div>
+              </div>
+              <div class="block-date">
+                <p class="date time">{{ member.created_at || '尚未簽到成功' }}</p>
+                <div class="block-date-bg"><span class="percent-75 dark"></span><span class="percent-25 light"></span></div>
+              </div>
+            </router-link>
+          </li>
+        </ul>
+      </li>
+    </ul>
   </div>
 </template>
 
@@ -12,10 +50,18 @@
   export default {
     name: 'MemberList',
     computed: {
+      ...mapGetters([
+        'loaded',
+        'membersData'
+      ]),
     },
     created () {
+      this.$store.dispatch('getMembersData');
     },
     data() {
+      return {
+        initialAvatar: AVATAR_INITIAL
+      }
     },
     methods: {
       getGroupedData (list) {
@@ -38,9 +84,17 @@
     transition: all 0.15s;
   }
 
+  ul {
+    padding-left: 0px;
+  }
+
   li {
     overflow: hidden;
     list-style-type: none;
+  }
+
+  .greeting-container {
+    overflow: hidden;
   }
 
   .greeting {
@@ -48,6 +102,7 @@
   }
 
   .group-name {
+    margin-left: 20px;
     text-align: left;
   }
 
@@ -57,7 +112,7 @@
     float: left;
     box-shadow: 0 0 10px rgba(200, 201, 201, 0.5);
     background: #fff;
-    width: 350px;
+    width: 270px;
     color: #999998;
     text-decoration: none;
     list-style-type: none;
@@ -89,7 +144,7 @@
   }
 
   .wrap .block-text .block-text__info {
-    text-align: justify;
+    text-align: start;
   }
 
   .wrap .block-text p {
@@ -138,7 +193,7 @@
     z-index: 1;
     font-weight: 300;
     letter-spacing: 1px;
-    padding: 0px 30px 15px 30px;
+    padding: 0px 30px 15px 15px;
     font-size: 18px;
     opacity: 0;
     transition: all 0.25s;

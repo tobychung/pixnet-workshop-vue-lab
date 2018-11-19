@@ -1,6 +1,6 @@
 <template>
   <div class="canvas">
-    <div id="totalCounter" ref="totalClickCounter" class="total-counter">{{totalCount}}</div>
+    <div id="totalCounter" ref="totalClickCounter" class="total-counter">{{$store.getters.profileLikes.data.num_liked}}</div>
 
     <div id="clap" class="clap-container">
         <i class="clap-icon" :class="iconClass"></i>
@@ -69,9 +69,11 @@
 </div>
 </template>
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'ClapHand',
-  props: ['iconClass'],
+  props: ['iconClass', 'likedId'],
   data () {
     return {
       accCounter: 0,
@@ -97,20 +99,33 @@ export default {
       ]
     }
   },
+  computed: {
+    ...mapGetters([
+      'loaded',
+      'profileLikes'
+    ]),
+  },
   methods: {
     upClickCounter() {
+        const {
+            num_liked
+        } = this.$store.getters.profileLikes.data;
+
         const clickCounter = this.$refs.clicker // document.getElementById("clicker");
         const totalClickCounter = this.$refs.totalClickCounter // document.getElementById('totalCounter');
     	this.accCounter ++;
     	clickCounter.children[0].innerText = '+' + this.accCounter;
-        totalClickCounter.innerText = this.totalCount + this.accCounter;
-        this.totalCount++
+        totalClickCounter.innerText = num_liked + this.accCounter;
+        this.$store.commit('CLAP_INCREMENT', num_liked + 1);
+        // this.totalCount++
         if (clickCounter.classList.contains('first-active')) {
     		this.runAnimationCycle(clickCounter, 'active');
         } else {
         	this.runAnimationCycle(clickCounter, 'first-active');
         }
-       	this.runAnimationCycle(totalClickCounter, 'fader');
+        this.runAnimationCycle(totalClickCounter, 'fader');
+        this.$store.dispatch('giveAClap', { likedId: this.likedId });
+
     },
     runAnimationCycle(el, className, duration) {
     	if (el && !el.classList.contains(className)) {
@@ -151,6 +166,11 @@ export default {
   },
   mounted () {
     console.log('Lets clap bro')
+
+    const {
+        num_liked
+    } = this.$store.getters.profileLikes.data;
+
     document.getElementById('clap').onmouseover = () => {
     	let sonarClap = document.getElementById('sonar-clap');
         sonarClap.classList.add('hover-active');
@@ -174,7 +194,7 @@ export default {
         } else if(!particles3.classList.contains('animating')) {
         	this.animateParticles(particles3, 700);
         }
-        this.$emit('clap', this.totalCount)
+        this.$emit('clap', num_liked)
     }
   }
 }

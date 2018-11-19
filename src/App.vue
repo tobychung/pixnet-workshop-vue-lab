@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <div class="header">
-      <img class="logo" src="./assets/images/logo-pixnet.png">
+      <router-link to="/">
+        <img class="logo" src="./assets/images/logo-pixnet.png">
+      </router-link>
       <NavBar/>
     </div>
     <div class="divide-line" />
